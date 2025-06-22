@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form focus styles */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  ring-width: 2px;
+  ring-color: #ffffff;
+  ring-offset-width: 2px;
+  ring-offset-color: #111827;
+}
+
+/* Custom button hover effects */
+.btn-primary {
+  @apply bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white font-medium py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Custom card styles */
+.card {
+  @apply bg-gray-900 border border-gray-800 rounded-lg;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-gray-800;
+}
+
+.card-body {
+  @apply p-6;
+}
+
+/* Status indicators */
+.status-available {
+  @apply text-green-400;
+}
+
+.status-occupied {
+  @apply text-red-400;
+}
+
+.status-faculty {
+  @apply text-blue-400;
+}
+
+.status-home {
+  @apply text-gray-400;
+}
+
+/* Room status colors */
+.room-available {
+  @apply bg-gray-900 border-gray-800 hover:border-gray-700;
+}
+
+.room-occupied {
+  @apply bg-red-900/20 border-red-700;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
