@@ -193,20 +193,21 @@ const Dashboard = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-              {professors.map((professor) => (
-                <div key={professor.id} className="flex items-center space-x-2">
+              {/* Show only the first professor (or the logged-in one) */}
+              {professors.length > 0 && (
+                <div className="flex items-center space-x-2">
                   <span className="text-gray-300">
-                    Welcome, {professor.name || "Professor"}
+                    Welcome, {professors[0].name || "Professor"}
                   </span>
                   <p
                     className={`text-xs ${getStatusColor(
-                      professor.currentStatus
+                      professors[0].currentStatus
                     )}`}
                   >
-                    {professor.currentStatus || "Unknown status"}
+                    {professors[0].currentStatus || "Unknown status"}
                   </p>
                 </div>
-              ))}
+              )}
               <button
                 onClick={handleLogout}
                 className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md text-sm transition-colors"
