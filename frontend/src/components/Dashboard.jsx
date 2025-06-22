@@ -197,15 +197,9 @@ const Dashboard = () => {
               {professors.length > 0 && (
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-300">
-                    Welcome, {professors[0].name || "Professor"}
+                    Welcome
                   </span>
-                  <p
-                    className={`text-xs ${getStatusColor(
-                      professors[0].currentStatus
-                    )}`}
-                  >
-                    {professors[0].currentStatus || "Unknown status"}
-                  </p>
+                 
                 </div>
               )}
               <button
