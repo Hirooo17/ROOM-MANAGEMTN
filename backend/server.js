@@ -11,9 +11,19 @@ import errorHandler from './middleware/errorHandler.js';
 dotenv.config();
 
 const app = express();
-
+ const allowedOrigins = [
+          
+          'https://room-managemtn.vercel.app/'
+      ]
 // Middleware
-app.use(cors());
+app.use(
+          cors({
+            origin: allowedOrigins,
+            credentials: true,
+            allowedHeaders: ["Content-Type", "Authorization"],
+            methods: ["GET", "POST", "PUT", "DELETE"],
+          })
+        );
 app.use(express.json());
 
 // Database Connection
