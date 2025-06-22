@@ -34,7 +34,7 @@ const API_ENVIRONMENTS = {
 };
 
 // Get current environment (defaults to development if not set)
-const currentEnv =  'development';
+const currentEnv =  'production';
 
   const api = axios.create({
   baseURL: API_ENVIRONMENTS[currentEnv].baseURL,
