@@ -23,7 +23,7 @@ const API_ENVIRONMENTS = {
     timeout: 5000
   },
   production: {
-    baseURL: 'https://your-railway-app-name.up.railway.app/api',
+    baseURL: 'https://ccs-backend-production.up.railway.app',
     timeout: 10000
   },
   staging: {

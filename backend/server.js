@@ -12,10 +12,10 @@ dotenv.config();
 
 const app = express();
  const allowedOrigins = [
-          
+
           'https://room-managemtn.vercel.app/'
       ]
-// Middleware
+
 app.use(
           cors({
             origin: allowedOrigins,
