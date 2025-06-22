@@ -16,33 +16,13 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
- // Environment configuration
-const API_ENVIRONMENTS = {
-  development: {
-    baseURL: 'http://localhost:5000/api',
-    timeout: 5000
-  },
-  production: {
-    baseURL: 'https://ccs-backend-production.up.railway.app',
-    timeout: 10000
-  },
-  staging: {
-    baseURL: 'https://your-staging-url.com/api',
-    timeout: 8000
-  }
-  // Add more environments as needed
-};
-
-// Get current environment (defaults to development if not set)
-const currentEnv =  'production';
-
-  const api = axios.create({
-  baseURL: API_ENVIRONMENTS[currentEnv].baseURL,
-  timeout: API_ENVIRONMENTS[currentEnv].timeout,
+const api = axios.create({
+  baseURL: 'https://ccs-backend-production.up.railway.app/', // Ensure `/api` is included
+  timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-    // Add any common headers here
-  }
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // Disable if not using cookies/auth
 });
   // Add request interceptor to include token
   api.interceptors.request.use(config => {
