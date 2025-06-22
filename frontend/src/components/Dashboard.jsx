@@ -137,23 +137,23 @@ const Dashboard = () => {
   }
 
   const handleLogout = async () => {
-  try {
-    const loadingToast = toast.loading("Logging out...");
-    
-    // Update status to "At Home" first
-    await handleStatusUpdate("At Home");
-    
-    // Then perform logout
-    logout();
-    
-    toast.success("Logged out successfully!", { id: loadingToast });
-  } catch (error) {
-    console.error("Error during logout:", error);
-    toast.error("Failed to update status during logout");
-    // Still proceed with logout even if status update fails
-    logout();
-  }
-};
+    try {
+      const loadingToast = toast.loading("Logging out...");
+
+      // Update status to "At Home" first
+      await handleStatusUpdate("At Home");
+
+      // Then perform logout
+      logout();
+
+      toast.success("Logged out successfully!", { id: loadingToast });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast.error("Failed to update status during logout");
+      // Still proceed with logout even if status update fails
+      logout();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -193,28 +193,26 @@ const Dashboard = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-              {professors.length > 0 && (
-                <>
-                  <div>
-                    <span className="text-gray-300">
-                      Welcome, {professors[0]?.name || "Professor"}
-                    </span>
-                    <p
-                      className={`text-xs ${getStatusColor(
-                        professors[0]?.currentStatus
-                      )}`}
-                    >
-                      {professors[0]?.currentStatus || "Unknown status"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md text-sm transition-colors"
+              {professors.map((professor) => (
+                <div key={professor.id} className="flex items-center space-x-2">
+                  <span className="text-gray-300">
+                    Welcome, {professor.name || "Professor"}
+                  </span>
+                  <p
+                    className={`text-xs ${getStatusColor(
+                      professor.currentStatus
+                    )}`}
                   >
-                    Logout
-                  </button>
-                </>
-              )}
+                    {professor.currentStatus || "Unknown status"}
+                  </p>
+                </div>
+              ))}
+              <button
+                onClick={handleLogout}
+                className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md text-sm transition-colors"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -244,7 +242,6 @@ const Dashboard = () => {
       {/* Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Book Section */}
-       
 
         {activeTab === "overview" && (
           <div className="space-y-6">
@@ -415,7 +412,6 @@ const Dashboard = () => {
                     <h4 className="font-medium">
                       {professor.name || "Unknown"}
                     </h4>
-                    
                   </div>
                   <div className="text-right">
                     <p
