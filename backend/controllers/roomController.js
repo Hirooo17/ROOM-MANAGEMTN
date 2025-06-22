@@ -55,8 +55,8 @@ export const initializeRooms = async (req, res) => {
     console.log('Existing rooms deleted');
 
     const rooms = [];
-    for (let floor = 1; floor <= 3; floor++) {
-      for (let roomNum = 1; roomNum <= 3; roomNum++) {
+    for (let floor = 1; floor <= 4; floor++) {
+      for (let roomNum = 2; roomNum <= 4; roomNum++) {
         const roomNumber = `${floor}${roomNum.toString().padStart(2, '0')}`;
         const isSpecial = floor === 2 && roomNum === 1;
         

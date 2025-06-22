@@ -4,14 +4,14 @@ import User from '../models/Users.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, department } = req.body;
+    const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Professor already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword, department });
+    const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
     const token = jwt.sign(
@@ -27,7 +27,7 @@ export const register = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        department: user.department,
+       
         currentStatus: user.currentStatus
       }
     });
@@ -58,7 +58,7 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        department: user.department,
+      
         currentStatus: user.currentStatus,
         currentRoom: user.currentRoom
       }

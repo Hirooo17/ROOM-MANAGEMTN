@@ -71,7 +71,7 @@ export const createBooking = async (req, res) => {
     });
 
     const populatedBooking = await Booking.findById(booking._id)
-      .populate('professor', 'name department')
+      .populate('professor')
       .populate('room', 'roomNumber floor');
 
     res.status(201).json({
@@ -86,7 +86,7 @@ export const createBooking = async (req, res) => {
 export const getActiveBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ status: 'Active' })
-      .populate('professor', 'name department')
+      .populate('professor')
       .populate('room', 'roomNumber floor')
       .sort({ startTime: 1 });
 
@@ -117,7 +117,7 @@ export const getBookingHistory = async (req, res) => {
     const bookings = await Booking.find({ 
       status: { $in: ['Completed', 'Cancelled'] }
     })
-      .populate('professor', 'name department')
+      .populate('professor')
       .populate('room', 'roomNumber floor type')
       .sort({ actualEndTime: -1, endTime: -1 })
       .skip(skip)

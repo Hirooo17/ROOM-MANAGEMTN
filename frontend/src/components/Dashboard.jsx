@@ -4,7 +4,7 @@ import BookingModal from "./BookModal";
 import toast, { Toaster } from "react-hot-toast";
 
 const Dashboard = () => {
-  const { user, logout, apiCall } = useAuth();
+  const { logout, apiCall } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [rooms, setRooms] = useState([]);
   const [professors, setProfessors] = useState([]);
@@ -136,6 +136,25 @@ const Dashboard = () => {
     );
   }
 
+  const handleLogout = async () => {
+  try {
+    const loadingToast = toast.loading("Logging out...");
+    
+    // Update status to "At Home" first
+    await handleStatusUpdate("At Home");
+    
+    // Then perform logout
+    logout();
+    
+    toast.success("Logged out successfully!", { id: loadingToast });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    toast.error("Failed to update status during logout");
+    // Still proceed with logout even if status update fails
+    logout();
+  }
+};
+
   return (
     <div className="min-h-screen bg-black text-white">
       <Toaster
@@ -149,7 +168,7 @@ const Dashboard = () => {
           duration: 3000,
         }}
       />
-      
+
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,17 +189,32 @@ const Dashboard = () => {
                   />
                 </svg>
               </div>
-              <h1 className="text-xl font-bold">CSS Building</h1>
+              <h1 className="text-xl font-bold">CCS/MIS Building</h1>
             </div>
 
             <div className="flex items-center space-x-4">
-              <span className="text-gray-300">Welcome, {user?.name || "User"}</span>
-              <button
-                onClick={logout}
-                className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md text-sm transition-colors"
-              >
-                Logout
-              </button>
+              {professors.length > 0 && (
+                <>
+                  <div>
+                    <span className="text-gray-300">
+                      Welcome, {professors[0].name || "Professor"}
+                    </span>
+                    <p
+                      className={`text-xs ${getStatusColor(
+                        professors[0].currentStatus
+                      )}`}
+                    >
+                      {professors[0].currentStatus || "Unknown status"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md text-sm transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -210,41 +244,7 @@ const Dashboard = () => {
       {/* Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Book Section */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Quick Book Available Rooms</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            {rooms
-              .filter((room) => !room.isOccupied)
-              .slice(0, 12)
-              .map((room) => (
-                <button
-                  key={room._id}
-                  onClick={() => handleBookRoom(room)}
-                  className="bg-gray-800 hover:bg-white hover:text-black border border-gray-700 hover:border-white rounded-lg p-3 text-sm transition-all duration-200 group"
-                >
-                  <div className="font-medium">Room {room.roomNumber}</div>
-                  <div className="text-xs text-gray-400 group-hover:text-gray-600 mt-1">
-                    Floor {room.floor} • {room.type}
-                  </div>
-                </button>
-              ))}
-          </div>
-          {rooms.filter((room) => !room.isOccupied).length === 0 && (
-            <div className="text-center text-gray-400 py-4">
-              No available rooms for booking
-            </div>
-          )}
-          {rooms.filter((room) => !room.isOccupied).length > 12 && (
-            <div className="text-center mt-4">
-              <button
-                onClick={() => setActiveTab("rooms")}
-                className="text-blue-400 hover:text-blue-300 text-sm"
-              >
-                View all {rooms.filter((room) => !room.isOccupied).length} available rooms →
-              </button>
-            </div>
-          )}
-        </div>
+       
 
         {activeTab === "overview" && (
           <div className="space-y-6">
@@ -321,7 +321,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             {/* Floor Selector */}
             <div className="flex space-x-4">
-              {[1, 2, 3].map((floor) => (
+              {[2, 3, 4].map((floor) => (
                 <button
                   key={floor}
                   onClick={() => setSelectedFloor(floor)}
@@ -412,10 +412,10 @@ const Dashboard = () => {
                   className="px-6 py-4 flex justify-between items-center"
                 >
                   <div>
-                    <h4 className="font-medium">{professor.name || "Unknown"}</h4>
-                    <p className="text-sm text-gray-400">
-                      {professor.department || "N/A"}
-                    </p>
+                    <h4 className="font-medium">
+                      {professor.name || "Unknown"}
+                    </h4>
+                    
                   </div>
                   <div className="text-right">
                     <p
@@ -494,7 +494,8 @@ const Dashboard = () => {
                     <div>
                       <h4 className="font-medium">Room {booking.roomNumber}</h4>
                       <p className="text-sm text-gray-400">
-                        {booking.professor?.name || "Unknown"} • {booking.purpose}
+                        {booking.professor?.name || "Unknown"} •{" "}
+                        {booking.purpose}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(booking.startTime).toLocaleString()}
@@ -531,8 +532,18 @@ const Dashboard = () => {
                 onClick={() => setShowHistoryModal(false)}
                 className="text-gray-400 hover:text-white"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -540,20 +551,26 @@ const Dashboard = () => {
               <div className="mb-4">
                 <p className="text-gray-400">Floor: {selectedRoom.floor}</p>
                 <p className="text-gray-400">Type: {selectedRoom.type}</p>
-                <p className="text-gray-400">Capacity: {selectedRoom.capacity}</p>
+                <p className="text-gray-400">
+                  Capacity: {selectedRoom.capacity}
+                </p>
               </div>
-              
+
               <div className="divide-y divide-gray-800">
                 {roomHistory.length > 0 ? (
                   roomHistory.map((booking) => (
                     <div key={booking._id} className="py-3">
                       <div className="flex justify-between">
-                        <span className="font-medium">{booking.professor?.name || "Unknown Professor"}</span>
-                        <span className={`text-sm ${
-                          booking.status === 'Completed' 
-                            ? 'text-green-400' 
-                            : 'text-red-400'
-                        }`}>
+                        <span className="font-medium">
+                          {booking.professor?.name || "Unknown Professor"}
+                        </span>
+                        <span
+                          className={`text-sm ${
+                            booking.status === "Completed"
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
                           {booking.status}
                         </span>
                       </div>
@@ -563,9 +580,9 @@ const Dashboard = () => {
                           {new Date(booking.startTime).toLocaleString()}
                         </span>
                         <span>
-                          {booking.actualEndTime 
+                          {booking.actualEndTime
                             ? new Date(booking.actualEndTime).toLocaleString()
-                            : 'N/A'}
+                            : "N/A"}
                         </span>
                       </div>
                       <div className="text-xs text-gray-400 mt-1">

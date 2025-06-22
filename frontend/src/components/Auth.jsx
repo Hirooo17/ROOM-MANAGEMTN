@@ -7,23 +7,14 @@ const Auth = () => {
     name: '',
     email: '',
     password: '',
-    department: ''
+  
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
 
-  const departments = [
-    'Computer Science',
-    'Information Technology',
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Engineering',
-    'Business Administration'
-  ];
+ 
 
   const handleInputChange = (e) => {
     setFormData({
@@ -44,12 +35,12 @@ const Auth = () => {
       if (isLogin) {
         result = await login(formData.email, formData.password);
       } else {
-        if (!formData.name || !formData.department) {
+        if (!formData.name ) {
           setError('Please fill in all fields');
           setLoading(false);
           return;
         }
-        result = await register(formData.name, formData.email, formData.password, formData.department);
+        result = await register(formData.name, formData.email, formData.password);
       }
 
       if (!result.success) {
@@ -69,7 +60,7 @@ const Auth = () => {
       name: '',
       email: '',
       password: '',
-      department: ''
+     
     });
     setError('');
   };
@@ -153,27 +144,7 @@ const Auth = () => {
               />
             </div>
 
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Department
-                </label>
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  required={!isLogin}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                >
-                  <option value="">Select your department</option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+           
 
             <button
               type="submit"

@@ -36,7 +36,6 @@ export const getProfessorsStatus = async (req, res) => {
   try {
     const professors = await User.find({}, {
       name: 1,
-      department: 1,
       currentStatus: 1,
       currentRoom: 1,
       lastUpdated: 1

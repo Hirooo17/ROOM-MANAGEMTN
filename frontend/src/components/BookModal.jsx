@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
-import toast from 'react-hot-toast';
 
 const BookingModal = ({ isOpen, onClose, room, onBookingSuccess }) => {
   const { apiCall } = useAuth();
@@ -51,7 +50,6 @@ const BookingModal = ({ isOpen, onClose, room, onBookingSuccess }) => {
         }
       });
 
-      toast.success("Booking created successfully!");
       onBookingSuccess();
       onClose();
       setFormData({
@@ -60,9 +58,7 @@ const BookingModal = ({ isOpen, onClose, room, onBookingSuccess }) => {
         notes: ''
       });
     } catch (error) {
-      const errorMessage = error.message || 'Failed to create booking';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -102,9 +98,9 @@ const BookingModal = ({ isOpen, onClose, room, onBookingSuccess }) => {
           <div className="bg-gray-800 rounded-lg p-4 mb-6">
             <h3 className="font-medium text-white mb-2">Room Details</h3>
             <div className="text-sm text-gray-300 space-y-1">
-              <p>Floor: {room?.floor || "N/A"}</p>
-              <p>Type: {room?.type || "N/A"}</p>
-              <p>Capacity: {room?.capacity || "N/A"} people</p>
+              <p>Floor: {room?.floor}</p>
+              <p>Type: {room?.type}</p>
+              <p>Capacity: {room?.capacity} people</p>
             </div>
           </div>
 
