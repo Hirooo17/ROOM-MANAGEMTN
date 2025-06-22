@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
 const api = axios.create({
-  baseURL: 'https://ccs-backend-production.up.railway.app/', // Ensure `/api` is included
+  baseURL: 'https://ccs-backend-production.up.railway.app', 
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
