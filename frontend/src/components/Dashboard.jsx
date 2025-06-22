@@ -197,14 +197,14 @@ const Dashboard = () => {
                 <>
                   <div>
                     <span className="text-gray-300">
-                      Welcome, {professors.name || "Professor"}
+                      Welcome, {professors[0]?.name || "Professor"}
                     </span>
                     <p
                       className={`text-xs ${getStatusColor(
-                        professors.currentStatus
+                        professors[0]?.currentStatus
                       )}`}
                     >
-                      {professors.currentStatus || "Unknown status"}
+                      {professors[0]?.currentStatus || "Unknown status"}
                     </p>
                   </div>
                   <button
