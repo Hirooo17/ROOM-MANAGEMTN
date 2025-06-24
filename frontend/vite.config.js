@@ -7,32 +7,26 @@ export default defineConfig({
   plugins: [react(),  tailwindcss(),
     
     VitePWA({ 
-      "name": "CCS ROOM MANAGEMENT",
-    "short_name": "CSS ROOM",
-    "description": "A CSS Room Management App",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
-    "lang": "en",
-    "scope": "/",
-    "icons": [
-    {
-      "src": "/icon/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    },
-    {
-      "src": "/icon/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
-    })],
+
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      manifest: {
+        name: 'CCS ROOM MANAGEMENT',
+        short_name: 'CCS ROOM',
+        description: 'General Community Reporting App',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: '/icon/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/icon/icon-512.png',
+            type: 'image/png',
+            sizes: '512x512'
+          },
+        ]
+      },
+})],
 })
