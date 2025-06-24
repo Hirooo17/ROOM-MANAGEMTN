@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
         transports: ['polling'],
         auth: { token }, // Send token for authentication
+        reconnection: true, // Enable reconnection
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
       });
 
       socketInstance.on('connect', () => {

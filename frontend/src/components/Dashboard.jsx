@@ -23,228 +23,106 @@ const Dashboard = () => {
 
 
 
-  // // Utility function to convert VAPID key
-  // const urlB64ToUint8Array = (base64String) => {
-  //   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  //   const base64 = (base64String + padding)
-  //     .replace(/-/g, "+")
-  //     .replace(/_/g, "/");
-  //   const rawData = window.atob(base64);
-  //   const outputArray = new Uint8Array(rawData.length);
-  //   for (let i = 0; i < rawData.length; ++i) {
-  //     outputArray[i] = rawData.charCodeAt(i);
-  //   }
-  //   return outputArray;
-  // };
-
-  // // Setup push notifications
-  // const setupPushNotifications = async () => {
-  //   try {
-  //     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-  //       console.log("Notifications or service workers not supported");
-  //       return;
-  //     }
-
-  //     const permission = await Notification.requestPermission();
-  //     if (permission !== "granted") {
-  //       console.log("Notification permission denied");
-  //       return;
-  //     }
-
-  //     const registration = await navigator.serviceWorker.register("/sw.js");
-  //     console.log("Service Worker registered");
-
-  //     const response = await apiCall("/notifications/vapid-public-key");
-  //     const vapidPublicKey = response.publicKey;
-
-  //     const subscription = await registration.pushManager.subscribe({
-  //       userVisibleOnly: true,
-  //       applicationServerKey: urlB64ToUint8Array(vapidPublicKey),
-  //     });
-
-  //     await apiCall("/notifications/subscribe", {
-  //       method: "POST",
-  //       data: { subscription, userId: apiCall.user?.userId },
-  //     });
-  //     console.log("Push subscription sent to backend");
-  //   } catch (error) {
-  //     console.error("Error setting up push notifications:", error);
-  //     toast.error("Failed to set up notifications");
-  //   }
-  // };
-
-  // Enhanced Push Notification Setup with Debugging
-const setupPushNotifications = async () => {
-  try {
-    console.log("🔧 Starting push notification setup...");
-
-    // Check for basic support
-    if (!("Notification" in window)) {
-      console.error("❌ Notifications not supported in this browser");
-      return;
+  // Utility function to convert VAPID key
+  const urlB64ToUint8Array = (base64String) => {
+    try {
+      console.log("🔄 Converting VAPID key:", base64String);
+      if (!base64String) {
+        throw new Error("VAPID key is empty or undefined");
+      }
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      console.log("✅ VAPID key converted successfully");
+      return outputArray;
+    } catch (error) {
+      console.error("❌ VAPID key conversion failed:", error);
+      throw new Error(`VAPID key conversion failed: ${error.message}`);
     }
+  };
 
-    if (!("serviceWorker" in navigator)) {
-      console.error("❌ Service Workers not supported in this browser");
-      return;
+  // Setup push notifications
+  const setupPushNotifications = async () => {
+    try {
+      console.log("🔧 Starting push notification setup...");
+
+      if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.error("❌ Browser does not support notifications or service workers");
+        toast.error("Notifications not supported in this browser");
+        return;
+      }
+
+      console.log("✅ Browser supports all required features");
+
+      console.log("🔔 Requesting notification permission...");
+      const permission = await Notification.requestPermission();
+      console.log("Permission status:", permission);
+
+      if (permission !== "granted") {
+        console.error("❌ Notification permission denied");
+        toast.error("Notification permission denied. Please enable notifications in browser settings.");
+        return;
+      }
+
+      console.log("✅ Notification permission granted");
+
+      console.log("🔧 Checking service worker...");
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        console.error("❌ No service worker registered");
+        toast.error("Service worker not registered");
+        return;
+      }
+
+      await navigator.serviceWorker.ready;
+      console.log("✅ Service Worker is ready");
+
+      console.log("🔑 Fetching VAPID public key...");
+      const response = await apiCall("/notifications/vapid-public-key");
+      console.log("VAPID response:", response);
+
+      if (!response.publicKey) {
+        console.error("❌ No VAPID public key received");
+        toast.error("Failed to get VAPID public key");
+        return;
+      }
+
+      const vapidPublicKey = response.publicKey;
+      console.log("✅ VAPID public key received:", vapidPublicKey);
+
+      console.log("📱 Checking existing subscription...");
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log("📱 Existing subscription found:", existingSubscription);
+        return; // Skip if already subscribed
+      }
+
+      console.log("📱 Creating push subscription...");
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8Array(vapidPublicKey),
+      });
+      console.log("✅ Push subscription created:", subscription);
+
+      console.log("📤 Sending subscription to backend...");
+      const subscribeResponse = await apiCall("/notifications/subscribe", {
+        method: "POST",
+        data: {
+          subscription: subscription.toJSON(),
+          userId: apiCall.user?.id, // Use apiCall.user.id
+        },
+      });
+      console.log("✅ Subscription sent to backend:", subscribeResponse);
+      toast.success("Push notifications enabled successfully!");
+    } catch (error) {
+      console.error("❌ Error setting up push notifications:", error);
+      toast.error(`Failed to set up notifications: ${error.message}`);
     }
-
-    if (!("PushManager" in window)) {
-      console.error("❌ Push messaging not supported in this browser");
-      return;
-    }
-
-    console.log("✅ Browser supports all required features");
-
-    // Request permission
-    console.log("🔔 Requesting notification permission...");
-    const permission = await Notification.requestPermission();
-    console.log("Permission status:", permission);
-
-    if (permission !== "granted") {
-      console.error("❌ Notification permission denied");
-      toast.error("Notification permission denied. Please enable notifications in your browser settings.");
-      return;
-    }
-
-    console.log("✅ Notification permission granted");
-
-    // Register service worker
-    console.log("🔧 Registering service worker...");
-    const registration = await navigator.serviceWorker.register("/sw.js", {
-      scope: "/",
-    });
-
-    console.log("✅ Service Worker registered:", registration);
-
-    // Wait for service worker to be ready
-    await navigator.serviceWorker.ready;
-    console.log("✅ Service Worker is ready");
-
-    // Get VAPID public key
-    console.log("🔑 Fetching VAPID public key...");
-    const response = await apiCall("/notifications/vapid-public-key");
-    console.log("VAPID response:", response);
-
-    if (!response.publicKey) {
-      console.error("❌ No VAPID public key received");
-      toast.error("Failed to get VAPID public key");
-      return;
-    }
-
-    const vapidPublicKey = response.publicKey;
-    console.log("✅ VAPID public key received:", vapidPublicKey);
-
-    // Check if already subscribed
-    const existingSubscription = await registration.pushManager.getSubscription();
-    if (existingSubscription) {
-      console.log("📱 Existing subscription found:", existingSubscription);
-      // You might want to send this to your backend to update it
-    }
-
-    // Create new subscription
-    console.log("📱 Creating push subscription...");
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlB64ToUint8Array(vapidPublicKey),
-    });
-
-    console.log("✅ Push subscription created:", subscription);
-
-    // Send subscription to backend
-    console.log("📤 Sending subscription to backend...");
-    const subscribeResponse = await apiCall("api/notifications/subscribe", {
-      method: "POST",
-      data: { 
-        subscription: subscription.toJSON(), // Convert to JSON
-        userId: apiCall.user?.userId 
-      },
-    });
-
-    console.log("✅ Subscription sent to backend:", subscribeResponse);
-    toast.success("Push notifications enabled successfully!");
-
-    // // Test notification (optional)
-    // if (window.confirm("Would you like to test the notification?")) {
-    //   await testNotification();
-    // }
-
-  } catch (error) {
-    console.error("❌ Error setting up push notifications:", error);
-    toast.error(`Failed to set up notifications: ${error.message}`);
-  }
-};
-
-// Test notification function
-// const testNotification = async () => {
-//   try {
-//     console.log("🧪 Testing notification...");
-//     await apiCall("/notifications/test", {
-//       method: "POST",
-//       data: { userId: apiCall.user?.userId }
-//     });
-//     console.log("✅ Test notification sent");
-//   } catch (error) {
-//     console.error("❌ Test notification failed:", error);
-//   }
-// };
-
-// Enhanced VAPID key conversion with error handling
-const urlB64ToUint8Array = (base64String) => {
-  try {
-    console.log("🔄 Converting VAPID key:", base64String);
-    
-    if (!base64String) {
-      throw new Error("VAPID key is empty or undefined");
-    }
-
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
-    
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    
-    console.log("✅ VAPID key converted successfully");
-    return outputArray;
-  } catch (error) {
-    console.error("❌ VAPID key conversion failed:", error);
-    throw new Error(`VAPID key conversion failed: ${error.message}`);
-  }
-};
-
-// Enhanced service worker check
-const checkServiceWorkerStatus = async () => {
-  if ("serviceWorker" in navigator) {
-    const registration = await navigator.serviceWorker.getRegistration();
-    console.log("Service Worker registration:", registration);
-    
-    if (registration) {
-      console.log("Service Worker state:", registration.active?.state);
-      console.log("Service Worker scope:", registration.scope);
-    }
-  }
-};
-
-// Call this in your useEffect
-useEffect(() => {
-  fetchData();
-  
-  // Check service worker status first
-  checkServiceWorkerStatus();
-  
-  // Setup push notifications with delay to ensure everything is ready
-  setTimeout(() => {
-    setupPushNotifications();
-  }, 1000);
-
-  // ... rest of your socket setup
-}, [socket, apiCall]);
+  };
 
   
 
@@ -252,12 +130,11 @@ useEffect(() => {
   useEffect(() => {
     fetchData();
      // Check service worker status first
-  checkServiceWorkerStatus();
   
-  // Setup push notifications with delay to ensure everything is ready
-  setTimeout(() => {
+  
+  
     setupPushNotifications();
-  }, 1000);
+
 
     if (!socket) return; // Only set up listeners if socket exists
     // Debug listeners
