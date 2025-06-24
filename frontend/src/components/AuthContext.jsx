@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   // Initialize Socket.IO after login
   useEffect(() => {
     if (token && user) {
-      const socketInstance = io('https://ccs-backend-production.up.railway.app/api', {
+      const socketInstance = io('https://ccs-backend-production.up.railway.app', {
         withCredentials: true,
         transports: ['websocket', 'polling'],
         auth: { token }, // Send token for authentication
