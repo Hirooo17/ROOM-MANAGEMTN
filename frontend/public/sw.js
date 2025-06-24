@@ -34,8 +34,8 @@ self.addEventListener("push", (event) => {
 
   const title = data.title || "Room Management";
   const body = data.body || "You have a new notification";
-  const icon = data.icon || "/icon-192.png"; // Make sure this path is correct
-  const badge = "/icon-192.png"; // Badge for Android
+  const icon = data.icon || "/icon.png"; // Make sure this path is correct
+  const badge = "/icon.png"; // Badge for Android
   const url = data.url || "/";
   const tag = data.tag || "room-notification";
 

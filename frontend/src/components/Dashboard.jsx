@@ -133,7 +133,13 @@ const Dashboard = () => {
   
   
   
+    // Use a ref to ensure setupPushNotifications runs once
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const hasRun = React.useRef(false);
+  if (!hasRun.current) {
     setupPushNotifications();
+    hasRun.current = true;
+  };
 
 
     if (!socket) return; // Only set up listeners if socket exists
