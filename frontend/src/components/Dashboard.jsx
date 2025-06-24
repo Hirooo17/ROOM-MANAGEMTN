@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import BookingModal from "./BookModal";
 import toast, { Toaster } from "react-hot-toast";
+import io from 'socket.io-client'; 
+
+// Initialize Socket.IO client
+const socket = io('https://ccs-backend-production.up.railway.app', {
+  withCredentials: true,
+  transports: ['websocket', 'polling'],
+});
 
 const Dashboard = () => {
   const { logout, apiCall } = useAuth();
@@ -20,14 +27,46 @@ const Dashboard = () => {
   const [roomHistory, setRoomHistory] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     fetchData();
-    const interval = setInterval(() => {
-      if (document.hasFocus()) {
-        fetchData();
-      }
-    }, 30000);
-    return () => clearInterval(interval);
+
+    // Set up Socket.IO listeners
+    socket.on('roomsUpdated', (updatedRooms) => {
+      setRooms(updatedRooms);
+    });
+
+    socket.on('professorsUpdated', (updatedProfessor) => {
+      setProfessors((prev) =>
+        prev.map((prof) =>
+          prof._id === updatedProfessor.id
+            ? { ...prof, ...updatedProfessor }
+            : prof
+        )
+      );
+    });
+
+    socket.on('bookingCreated', (newBooking) => {
+      setActiveBookings((prev) => [...prev, newBooking]);
+      setMyBookings((prev) => {
+        if (newBooking.professor._id === apiCall.user?.userId) {
+          return [...prev, newBooking];
+        }
+        return prev;
+      });
+    });
+
+    socket.on('bookingEnded', ({ bookingId }) => {
+      setActiveBookings((prev) => prev.filter((b) => b._id !== bookingId));
+      setMyBookings((prev) => prev.filter((b) => b._id !== bookingId));
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off('roomsUpdated');
+      socket.off('professorsUpdated');
+      socket.off('bookingCreated');
+      socket.off('bookingEnded');
+    };
   }, []);
 
   const fetchData = async () => {
@@ -72,7 +111,7 @@ const Dashboard = () => {
         data: { status, roomNumber },
       });
       toast.success("Status updated successfully!", { id: loadingToast });
-      fetchData();
+      
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Failed to update status", { id: loadingToast });
@@ -118,7 +157,7 @@ const Dashboard = () => {
   };
 
   const handleBookingSuccess = () => {
-    fetchData();
+    
   };
 
   const formatDuration = (minutes) => {

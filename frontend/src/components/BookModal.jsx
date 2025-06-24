@@ -49,7 +49,7 @@ const BookingModal = ({ isOpen, onClose, room, onBookingSuccess }) => {
           notes: formData.notes
         }
       });
-
+      
       onBookingSuccess();
       onClose();
       setFormData({
