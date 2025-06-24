@@ -2,6 +2,7 @@ import React from 'react';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
+import PWAInstallPrompt from './components/PWAInstallPrompt.jsx'; // Import the component
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -17,7 +18,12 @@ const AppContent = () => {
     );
   }
 
-  return user ? <Dashboard /> : <Auth />;
+  return (
+    <>
+      {user ? <Dashboard /> : <Auth />}
+      <PWAInstallPrompt /> {/* Add it here */}
+    </>
+  );
 };
 
 const App = () => {
