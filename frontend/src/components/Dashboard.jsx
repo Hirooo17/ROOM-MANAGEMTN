@@ -202,23 +202,23 @@ const Dashboard = () => {
   }
 
   const handleLogout = async () => {
-    try {
-      const loadingToast = toast.loading("Logging out...");
-
-      // Update status to "At Home" first
-      await handleStatusUpdate("At Home");
-
-      // Then perform logout
-      logout();
-
-      toast.success("Logged out successfully!", { id: loadingToast });
-    } catch (error) {
-      console.error("Error during logout:", error);
-      toast.error("Failed to update status during logout");
-      // Still proceed with logout even if status update fails
-      logout();
+  try {
+    // Check for active bookings
+    if (myBookings.some(booking => booking.status === "Active")) {
+      toast.error("You have an active booking. Please end it first before logging out.");
+      return;
     }
-  };
+
+    const loadingToast = toast.loading("Logging out...");
+    await handleStatusUpdate("At Home");
+    logout();
+    toast.success("Logged out successfully!", { id: loadingToast });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    toast.error("Failed to update status during logout");
+    logout();
+  }
+};
 
   return (
     <div className="min-h-screen bg-black text-white">
