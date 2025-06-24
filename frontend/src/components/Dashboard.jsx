@@ -153,7 +153,7 @@ const setupPushNotifications = async () => {
 
     // Send subscription to backend
     console.log("📤 Sending subscription to backend...");
-    const subscribeResponse = await apiCall("/notifications/subscribe", {
+    const subscribeResponse = await apiCall("api/notifications/subscribe", {
       method: "POST",
       data: { 
         subscription: subscription.toJSON(), // Convert to JSON
@@ -164,10 +164,10 @@ const setupPushNotifications = async () => {
     console.log("✅ Subscription sent to backend:", subscribeResponse);
     toast.success("Push notifications enabled successfully!");
 
-    // Test notification (optional)
-    if (window.confirm("Would you like to test the notification?")) {
-      await testNotification();
-    }
+    // // Test notification (optional)
+    // if (window.confirm("Would you like to test the notification?")) {
+    //   await testNotification();
+    // }
 
   } catch (error) {
     console.error("❌ Error setting up push notifications:", error);
@@ -176,18 +176,18 @@ const setupPushNotifications = async () => {
 };
 
 // Test notification function
-const testNotification = async () => {
-  try {
-    console.log("🧪 Testing notification...");
-    await apiCall("/notifications/test", {
-      method: "POST",
-      data: { userId: apiCall.user?.userId }
-    });
-    console.log("✅ Test notification sent");
-  } catch (error) {
-    console.error("❌ Test notification failed:", error);
-  }
-};
+// const testNotification = async () => {
+//   try {
+//     console.log("🧪 Testing notification...");
+//     await apiCall("/notifications/test", {
+//       method: "POST",
+//       data: { userId: apiCall.user?.userId }
+//     });
+//     console.log("✅ Test notification sent");
+//   } catch (error) {
+//     console.error("❌ Test notification failed:", error);
+//   }
+// };
 
 // Enhanced VAPID key conversion with error handling
 const urlB64ToUint8Array = (base64String) => {
