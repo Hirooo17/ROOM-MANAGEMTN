@@ -63,7 +63,7 @@ const PWAInstallPrompt = () => {
         <div>
           <h4 className="font-semibold text-white">Install App</h4>
           <p className="text-sm text-gray-300 mt-1">
-            Add CCS/MIS to your home screen for faster access and offline use.
+            Add CCS/MIS to your home screen for faster use.
           </p>
           <div className="flex space-x-2 mt-3">
             <button
