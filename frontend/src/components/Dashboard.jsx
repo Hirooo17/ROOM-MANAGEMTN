@@ -3,9 +3,8 @@ import { useAuth } from "./AuthContext";
 import BookingModal from "./BookModal";
 import toast, { Toaster } from "react-hot-toast";
 
-
 const Dashboard = () => {
-  const { socket,logout, apiCall } = useAuth();
+  const { socket, logout, apiCall } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [rooms, setRooms] = useState([]);
   const [professors, setProfessors] = useState([]);
@@ -21,24 +20,23 @@ const Dashboard = () => {
   const [roomHistory, setRoomHistory] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
- useEffect(() => {
+  useEffect(() => {
     fetchData();
 
     if (!socket) return; // Only set up listeners if socket exists
     // Debug listeners
-  const onConnect = () => console.log('Dashboard: Socket connected');
-  const onDisconnect = () => console.log('Dashboard: Socket disconnected');
+    const onConnect = () => console.log("Dashboard: Socket connected");
+    const onDisconnect = () => console.log("Dashboard: Socket disconnected");
 
-  socket.on('connect', onConnect);
-  socket.on('disconnect', onDisconnect);
-
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
 
     // Set up Socket.IO listeners
-    socket.on('roomsUpdated', (updatedRooms) => {
+    socket.on("roomsUpdated", (updatedRooms) => {
       setRooms(updatedRooms);
     });
 
-    socket.on('professorsUpdated', (updatedProfessor) => {
+    socket.on("professorsUpdated", (updatedProfessor) => {
       setProfessors((prev) =>
         prev.map((prof) =>
           prof._id === updatedProfessor.id
@@ -48,7 +46,7 @@ const Dashboard = () => {
       );
     });
 
-    socket.on('bookingCreated', (newBooking) => {
+    socket.on("bookingCreated", (newBooking) => {
       setActiveBookings((prev) => [...prev, newBooking]);
       setMyBookings((prev) => {
         if (newBooking.professor._id === apiCall.user?.userId) {
@@ -58,19 +56,19 @@ const Dashboard = () => {
       });
     });
 
-    socket.on('bookingEnded', ({ bookingId }) => {
+    socket.on("bookingEnded", ({ bookingId }) => {
       setActiveBookings((prev) => prev.filter((b) => b._id !== bookingId));
       setMyBookings((prev) => prev.filter((b) => b._id !== bookingId));
     });
 
     // Cleanup on component unmount
     return () => {
-      socket.off('roomsUpdated');
-      socket.off('professorsUpdated');
-      socket.off('bookingCreated');
-      socket.off('bookingEnded');
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      socket.off("roomsUpdated");
+      socket.off("professorsUpdated");
+      socket.off("bookingCreated");
+      socket.off("bookingEnded");
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
     };
   }, [socket]);
 
@@ -107,16 +105,39 @@ const Dashboard = () => {
     }
   };
 
+  // const handleStatusUpdate = async (status, roomNumber = null) => {
+  //   let loadingToast;
+  //   try {
+  //     loadingToast = toast.loading("Updating status...");
+  //     await apiCall("/professors/status", {
+  //       method: "PUT",
+  //       data: { status, roomNumber },
+  //     });
+  //     toast.success("Status updated successfully!", { id: loadingToast });
+
+  //   } catch (error) {
+  //     console.error("Error updating status:", error);
+  //     toast.error("Failed to update status", { id: loadingToast });
+  //   }
+  // };
+
   const handleStatusUpdate = async (status, roomNumber = null) => {
     let loadingToast;
     try {
+      // Check if professor has active bookings
+      if (myBookings.some((booking) => booking.status === "Active")) {
+        toast.error(
+          "You have an active booking. Please end it first before changing your status."
+        );
+        return;
+      }
+
       loadingToast = toast.loading("Updating status...");
       await apiCall("/professors/status", {
         method: "PUT",
         data: { status, roomNumber },
       });
       toast.success("Status updated successfully!", { id: loadingToast });
-      
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Failed to update status", { id: loadingToast });
@@ -240,10 +261,7 @@ const Dashboard = () => {
               {/* Show only the first professor (or the logged-in one) */}
               {professors.length > 0 && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-300">
-                    Welcome
-                  </span>
-                 
+                  <span className="text-gray-300">Welcome</span>
                 </div>
               )}
               <button
@@ -310,7 +328,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Status Update */}
+            {/* Status Update
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-4">Update Your Status</h3>
               <div className="flex flex-wrap gap-3">
@@ -319,6 +337,35 @@ const Dashboard = () => {
                     key={status}
                     onClick={() => handleStatusUpdate(status)}
                     className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div> */}
+
+            {/* Status Update */}
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Update Your Status</h3>
+              {myBookings.some((booking) => booking.status === "Active") && (
+                <div className="mb-4 p-3 bg-red-900/20 border border-red-700 rounded-md text-sm">
+                  You have an active booking. Please end it before changing your
+                  status.
+                </div>
+              )}
+              <div className="flex flex-wrap gap-3">
+                {["Available", "In Faculty Room", "At Home"].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => handleStatusUpdate(status)}
+                    disabled={myBookings.some(
+                      (booking) => booking.status === "Active"
+                    )}
+                    className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                      myBookings.some((booking) => booking.status === "Active")
+                        ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-800 hover:bg-gray-700"
+                    }`}
                   >
                     {status}
                   </button>
