@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [activeBookings, setActiveBookings] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [selectedFloor, setSelectedFloor] = useState(2);
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
     room: null,
