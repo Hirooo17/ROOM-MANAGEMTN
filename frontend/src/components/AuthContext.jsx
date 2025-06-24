@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     if (token && user) {
       const socketInstance = io('https://ccs-backend-production.up.railway.app', {
         withCredentials: true,
-        transports: ['websocket',],
+        transports: ['polling'],
         auth: { token }, // Send token for authentication
       });
 

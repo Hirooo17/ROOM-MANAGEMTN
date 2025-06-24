@@ -25,6 +25,13 @@ const Dashboard = () => {
     fetchData();
 
     if (!socket) return; // Only set up listeners if socket exists
+    // Debug listeners
+  const onConnect = () => console.log('Dashboard: Socket connected');
+  const onDisconnect = () => console.log('Dashboard: Socket disconnected');
+
+  socket.on('connect', onConnect);
+  socket.on('disconnect', onDisconnect);
+
 
     // Set up Socket.IO listeners
     socket.on('roomsUpdated', (updatedRooms) => {
@@ -62,8 +69,10 @@ const Dashboard = () => {
       socket.off('professorsUpdated');
       socket.off('bookingCreated');
       socket.off('bookingEnded');
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
     };
-  }, []);
+  }, [socket]);
 
   const fetchData = async () => {
     try {
@@ -153,7 +162,7 @@ const Dashboard = () => {
   };
 
   const handleBookingSuccess = () => {
-    
+    fetchData();
   };
 
   const formatDuration = (minutes) => {
