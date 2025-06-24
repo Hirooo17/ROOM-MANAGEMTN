@@ -2,16 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import BookingModal from "./BookModal";
 import toast, { Toaster } from "react-hot-toast";
-import io from 'socket.io-client'; 
 
-// Initialize Socket.IO client
-const socket = io('https://ccs-backend-production.up.railway.app', {
-  withCredentials: true,
-  transports: ['websocket', 'polling'],
-});
 
 const Dashboard = () => {
-  const { logout, apiCall } = useAuth();
+  const { socket,logout, apiCall } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [rooms, setRooms] = useState([]);
   const [professors, setProfessors] = useState([]);
@@ -29,6 +23,8 @@ const Dashboard = () => {
 
  useEffect(() => {
     fetchData();
+
+    if (!socket) return; // Only set up listeners if socket exists
 
     // Set up Socket.IO listeners
     socket.on('roomsUpdated', (updatedRooms) => {

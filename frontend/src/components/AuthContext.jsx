@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
 
 const AuthContext = createContext();
 
@@ -15,15 +16,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState(null);
 
-const api = axios.create({
-  baseURL: 'https://ccs-backend-production.up.railway.app/api', 
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Disable if not using cookies/auth
-});
+  const api = axios.create({
+    baseURL: 'https://ccs-backend-production.up.railway.app/api',
+    timeout: 10000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+  });
+
   // Add request interceptor to include token
   api.interceptors.request.use(config => {
     if (token) {
@@ -43,6 +46,35 @@ const api = axios.create({
     }
   );
 
+  // Initialize Socket.IO after login
+  useEffect(() => {
+    if (token && user) {
+      const socketInstance = io('https://ccs-backend-production.up.railway.app/api', {
+        withCredentials: true,
+        transports: ['websocket', 'polling'],
+        auth: { token }, // Send token for authentication
+      });
+
+      socketInstance.on('connect', () => {
+        console.log('Socket.IO connected:', socketInstance.id);
+      });
+
+      socketInstance.on('connect_error', (err) => {
+        console.error('Socket.IO connection error:', err.message);
+      });
+
+      setSocket(socketInstance);
+
+      return () => {
+        socketInstance.disconnect();
+        console.log('Socket.IO disconnected');
+      };
+    } else if (socket) {
+      socket.disconnect();
+      setSocket(null);
+    }
+  }, [token, user]);
+
   useEffect(() => {
     if (token) {
       fetchUserProfile();
@@ -53,25 +85,22 @@ const api = axios.create({
 
   const fetchUserProfile = async () => {
     try {
-      // First decode the token to get basic user info
       const userData = decodeToken(token);
       if (userData) {
         setUser({
           id: userData.userId || userData.id,
           email: userData.email,
           name: userData.name,
-          role: userData.role // assuming your token includes role
+          role: userData.role
         });
       }
 
-      // If you need additional professor-specific data
       if (userData?.role === 'professor') {
         const response = await api.get('/professors/get-status');
         setUser(prev => ({ ...prev, status: response.data }));
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // Don't logout if we have basic user info from token
       if (!user) {
         logout();
       }
@@ -111,8 +140,7 @@ const api = axios.create({
       const response = await api.post('/auth/register', { 
         name, 
         email, 
-        password, 
-       
+        password,
       });
       const { token, user } = response.data;
       
@@ -129,6 +157,10 @@ const api = axios.create({
   };
 
   const logout = () => {
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+    }
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
@@ -139,7 +171,7 @@ const api = axios.create({
       const response = await api({
         url: endpoint,
         method: options.method || 'GET',
-        data: options.body,
+        data: options.data, // Changed from options.body to match axios
         ...options
       });
       return response.data;
@@ -155,7 +187,8 @@ const api = axios.create({
     register,
     logout,
     apiCall,
-    loading
+    loading,
+    socket, // Expose socket for components like Dashboard
   };
 
   return (
