@@ -20,8 +20,63 @@ const Dashboard = () => {
   const [roomHistory, setRoomHistory] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
+
+
+
+  // Utility function to convert VAPID key
+  const urlB64ToUint8Array = (base64String) => {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  // Setup push notifications
+  const setupPushNotifications = async () => {
+    try {
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        console.log("Notifications or service workers not supported");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        console.log("Notification permission denied");
+        return;
+      }
+
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      console.log("Service Worker registered");
+
+      const response = await apiCall("/notifications/vapid-public-key");
+      const vapidPublicKey = response.publicKey;
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8Array(vapidPublicKey),
+      });
+
+      await apiCall("/notifications/subscribe", {
+        method: "POST",
+        data: { subscription, userId: apiCall.user?.userId },
+      });
+      console.log("Push subscription sent to backend");
+    } catch (error) {
+      console.error("Error setting up push notifications:", error);
+      toast.error("Failed to set up notifications");
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    // Call push notification setup
+    setupPushNotifications();
 
     if (!socket) return; // Only set up listeners if socket exists
     // Debug listeners
@@ -70,7 +125,16 @@ const Dashboard = () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, [socket]);
+
+    
+
+
+
+    
+
+
+
+  }, [socket, apiCall]);
 
   const fetchData = async () => {
     try {
@@ -105,21 +169,7 @@ const Dashboard = () => {
     }
   };
 
-  // const handleStatusUpdate = async (status, roomNumber = null) => {
-  //   let loadingToast;
-  //   try {
-  //     loadingToast = toast.loading("Updating status...");
-  //     await apiCall("/professors/status", {
-  //       method: "PUT",
-  //       data: { status, roomNumber },
-  //     });
-  //     toast.success("Status updated successfully!", { id: loadingToast });
-
-  //   } catch (error) {
-  //     console.error("Error updating status:", error);
-  //     toast.error("Failed to update status", { id: loadingToast });
-  //   }
-  // };
+  // 
 
   const handleStatusUpdate = async (status, roomNumber = null) => {
     let loadingToast;
