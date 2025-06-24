@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   const api = axios.create({
-    baseURL: 'https://ccs-backend-production.up.railway.app/api',
+    baseURL: 'https://ccs-backend-production.up.railway.app',
     timeout: 10000,
     headers: {
       'Content-Type': 'application/json',
